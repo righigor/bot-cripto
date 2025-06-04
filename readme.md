@@ -1,6 +1,13 @@
 # Bot Cripto Binance
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white&style=flat)
+![Binance API](https://img.shields.io/badge/Binance-API-yellow?style=flat&logo=binance)
+![License](https://img.shields.io/badge/license-ISC-blue)
 
-Este projeto é um bot simples para negociação automatizada de criptomoedas na Binance, utilizando médias móveis simples (SMA) como estratégia de compra e venda.
+## 📈 Sobre o Projeto
+
+Este bot realiza negociações automatizadas na Binance (testnet), utilizando médias móveis simples como critério de decisão. Ideal para quem está estudando automação de estratégias de trade com Node.js.
+
+> **Tecnologias:** Node.js, API da Binance, Estratégia SMA
 
 ## Funcionalidades
 
