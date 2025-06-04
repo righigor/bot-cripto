@@ -1,10 +1,16 @@
+require("dotenv").config();
+const crypto = require("crypto");
 const axios = require("axios");
 
 const SYMBOL = "BTCUSDT";
-const BUY_PRICE = 103160;
-const SELL_PRICE = 106370;
 
-const API_URL = "https://testnet.binance.vision"; //https://api.binance.com
+//API test
+//https://testnet.binance.vision
+
+//API produção
+//https://api.binance.com
+
+const API_URL = "https://testnet.binance.vision";
 
 let isOpened = false;
 
@@ -30,7 +36,7 @@ async function start() {
   console.clear();
   console.log(price);
 
-  const sma13 = calcSMA(data.slice(5));
+  const sma13 = calcSMA(data.slice(8));
   const sma21 = calcSMA(data);
   console.log("sma13: " + sma13);
   console.log("sma21: " + sma21);
@@ -38,11 +44,42 @@ async function start() {
   if (sma13 > sma21 && isOpened === false) {
     console.log("comprar");
     isOpened = true;
+    newOrder(SYMBOL, process.env.QUANTITY, "buy");
   } else if (sma13 < sma21 && isOpened === true) {
     console.log("vender");
+    newOrder(SYMBOL, process.env.QUANTITY, "sell");
     isOpened = false;
   } else {
     console.log("aguardar");
+  }
+}
+
+async function newOrder(symbol, quantity, side) {
+  const order = {
+    symbol,
+    quantity,
+    side,
+  };
+  order.type = "MARKET";
+  order.timestamp = Date.now();
+
+  const signature = crypto
+    .createHmac("sha256", process.env.SECRET_KEY)
+    .update(new URLSearchParams(order).toString())
+    .digest("hex");
+
+  order.signature = signature;
+
+  try {
+    const { data } = await axios.post(
+      API_URL + "/api/v3/order",
+      new URLSearchParams(order).toString(),
+      { headers: { "X-MBX-APIKEY": process.env.API_KEY } }
+    );
+
+    console.log(data);
+  } catch (error) {
+    console.error(error.resonse.data);
   }
 }
 
