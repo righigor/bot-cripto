@@ -2,16 +2,6 @@ require("dotenv").config();
 const crypto = require("crypto");
 const axios = require("axios");
 
-const SYMBOL = "BTCUSDT";
-
-//API test
-//https://testnet.binance.vision
-
-//API produção
-//https://api.binance.com
-
-const API_URL = "https://testnet.binance.vision";
-
 let isOpened = false;
 
 function calcSMA(data) {
@@ -24,7 +14,7 @@ async function start() {
   let data;
   try {
     const response = await axios.get(
-      API_URL + "/api/v3/klines?limit=21&interval=15m&symbol=" + SYMBOL
+      process.env.API_URL_TEST + "/api/v3/klines?limit=21&interval=15m&symbol=" + process.env.SYMBOL
     );
     data = response.data;
   } catch (error) {
@@ -44,10 +34,10 @@ async function start() {
   if (sma13 > sma21 && isOpened === false) {
     console.log("comprar");
     isOpened = true;
-    newOrder(SYMBOL, process.env.QUANTITY, "buy");
+    newOrder(process.env.SYMBOL, process.env.QUANTITY, "buy");
   } else if (sma13 < sma21 && isOpened === true) {
     console.log("vender");
-    newOrder(SYMBOL, process.env.QUANTITY, "sell");
+    newOrder(process.env.SYMBOL, process.env.QUANTITY, "sell");
     isOpened = false;
   } else {
     console.log("aguardar");
@@ -71,13 +61,14 @@ async function newOrder(symbol, quantity, side) {
   order.signature = signature;
 
   try {
-    const { data } = await axios.post(
-      API_URL + "/api/v3/order",
-      new URLSearchParams(order).toString(),
-      { headers: { "X-MBX-APIKEY": process.env.API_KEY } }
-    );
+    // const { data } = await axios.post(
+    //   process.env.API_URL_TEST + "/api/v3/order",
+    //   new URLSearchParams(order).toString(),
+    //   { headers: { "X-MBX-APIKEY": process.env.API_KEY } }
+    // );
 
-    console.log(data);
+    // console.log(data);
+    console.log(order)
   } catch (error) {
     console.error(error.resonse.data);
   }
