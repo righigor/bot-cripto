@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { google } = require("googleapis");
 const credentials = require("./credentials.json");
+const getBrazilDateTimeFormatted = require("./utils/getBrazilTimeISO");
 
 async function appendLogErrorToSheet(errorDetails) {
   const auth = new google.auth.GoogleAuth({
@@ -12,14 +13,10 @@ async function appendLogErrorToSheet(errorDetails) {
 
   const spreadsheetId = process.env.ID_SHEETS;
   const range = "errors!A:E";
-
-  const values = [[
-    errorDetails.errorType,
-    errorDetails.description,
-    errorDetails.status,
-    errorDetails.data,
-    new Date().toISOString()
-  ]];
+  const { date, time } = getBrazilDateTimeFormatted();
+  const values = [
+    [errorDetails.errorType, errorDetails.description, date, time],
+  ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
@@ -27,8 +24,8 @@ async function appendLogErrorToSheet(errorDetails) {
     valueInputOption: "RAW",
     insertDataOption: "INSERT_ROWS",
     requestBody: {
-      values
-    }
+      values,
+    },
   });
 
   console.log("✅ Log registrado no Google Sheets.");
