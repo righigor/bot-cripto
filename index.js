@@ -4,6 +4,8 @@ const axios = require("axios");
 const getBalance = require("./getSaldo");
 const appendLogToSheet = require("./appendLogsSheet");
 const appendLogErrorToSheet = require("./appendLogsErrorsSheet");
+const floorToStep = require("./utils/floorToStep");
+const getStepSize = require("./utils/getStepSize");
 
 let isOpened = false;
 
@@ -33,6 +35,7 @@ async function start() {
   } catch (error) {
     console.error("Error fetching data from Binance API:", error.message);
   }
+  const stepSize = await getStepSize(process.env.SYMBOL);
   const candle = data[data.length - 1];
   const price = parseFloat(candle[4]);
 
@@ -56,6 +59,7 @@ async function start() {
         status: "-",
         data: "-",
       });
+      btcBalance > stepSize ? isOpened = true : isOpened = false;
       return;
     }
     newOrder(process.env.SYMBOL, usdtBalance * 0.9, "buy");
@@ -75,10 +79,11 @@ async function newOrder(symbol, balance, side) {
   );
   const price = parseFloat(ticker.price);
   let quantity;
+  const stepSize = await getStepSize(process.env.SYMBOL);
   if (side === "buy") {
-    quantity = (balance / price).toFixed(6);
+    quantity = floorToStep(balance / price, stepSize);
   } else {
-    quantity = balance;
+    quantity = floorToStep(balance, stepSize);
   }
   const order = {
     symbol,
@@ -131,16 +136,12 @@ async function newOrder(symbol, balance, side) {
       appendLogErrorToSheet({
         errorType: "API Error",
         description: "Erro ao tentar acessar a API",
-        status: error.response.status,
-        data: error.response.data,
       });
     } else {
       console.error("❌ Erro de rede ou configuração:", error.message);
       appendLogErrorToSheet({
         errorType: "Error",
         description: "❌ Erro de rede ou configuração",
-        status: "-",
-        data: error.message,
       });
     }
   }
